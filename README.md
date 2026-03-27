@@ -24,7 +24,7 @@ SnippitKit is a lightweight web tool for producing polished code screenshots and
 
 :star: Star me on GitHub — it helps!
 
-# ✨ Features
+# Features
 
 <p align="left">
 ✔️ Live Preview: instant syntax render <br>
