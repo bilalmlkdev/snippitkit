@@ -80,4 +80,4 @@ SnippitKit is a lightweight web tool for producing polished code screenshots and
 This project is licensed under the MIT License - see the [LICENSE.md](./LICENSE) file for details.
 # Suggestions
 
-Please contact me at bilalmlkdev@gmail.com if you have any feedback or suggestions. :star: Star it, if you like it!
+Please contact me at **bilalmlkdev@gmail.com**. if you have any feedback or suggestions. :star: Star it, if you like it!
