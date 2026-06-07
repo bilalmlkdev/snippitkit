@@ -62,7 +62,7 @@ SnippitKit is a lightweight web tool for producing polished code screenshots and
 - Keyboard: use Arrow keys + Enter in custom selects; Escape closes menus.
 - Note: clipboard image write requires HTTPS and browser support.
 
-## Tech Stack ⚡
+## Tech Stack 
 
 - [<b>HTML5</b>](https://developer.mozilla.org/en-US/docs/Web/HTML) - Structure of the web app.
 - [<b>CSS3</b>](https://developer.mozilla.org/en-US/docs/Web/CSS) - Styling, themes, and responsive layout.
@@ -75,7 +75,7 @@ SnippitKit is a lightweight web tool for producing polished code screenshots and
 - [<b>npm</b>](https://www.npmjs.com/) - Dependency and script management.
 - [<b>Netlify</b>](https://www.vercel.com/) - Hosting the static site online.
 
-# License 📄
+# License 
 
 This project is licensed under the MIT License - see the [LICENSE.md](./LICENSE) file for details.
 # Feedback
