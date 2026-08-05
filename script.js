@@ -146,6 +146,13 @@ document.addEventListener('DOMContentLoaded', () => {
     pre.appendChild(codeBlock);
   }
 
+  // preserve whatever language class already lives on the <code> element in the HTML
+  // (e.g. "language-kotlin") so the dropdown and the highlighted output agree on load,
+  // instead of letting detectLanguageFromText() silently override it.
+  if (codeBlock.className.includes('language-')) {
+    currentLanguage = codeBlock.className.trim();
+  }
+
   // <textarea class="editor-textarea">
   let editor = codePanel.querySelector('textarea.editor-textarea');
   if (!editor) {
@@ -211,10 +218,16 @@ document.addEventListener('DOMContentLoaded', () => {
   //  JSON data (themes, languages, fonts)
   async function loadData() {
     const [themesRes, languagesRes, fontsRes] = await Promise.all([
-      fetch('./data/themes.json'),
-      fetch('./data/languages.json'),
-      fetch('./data/fonts.json'),
+      fetch('/data/themes.json'),
+      fetch('/data/languages.json'),
+      fetch('/data/fonts.json'),
     ]);
+
+    if (!themesRes.ok || !languagesRes.ok || !fontsRes.ok) {
+      throw new Error(
+        `Failed to fetch data (themes: ${themesRes.status}, languages: ${languagesRes.status}, fonts: ${fontsRes.status})`,
+      );
+    }
 
     const [themes, languages, fonts] = await Promise.all([
       themesRes.json(),
@@ -301,6 +314,9 @@ document.addEventListener('DOMContentLoaded', () => {
     })
     .catch(err => {
       console.warn('Failed to load JSON data for selects:', err);
+      document.querySelectorAll('.custom-select .trigger-value').forEach(el => {
+        el.textContent = 'Failed to load — refresh page';
+      });
     });
 
   // applying things

@@ -77,7 +77,6 @@
     "prismClass": "language-json",
     "icon": "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/json/json-original.svg"
   },
-
   {
     "id": "lua",
     "label": "Lua",

@@ -24,12 +24,6 @@
     "icon": "/assets/theme-pngs/004 Young Passion.png"
   },
   {
-    "id": "sunny-morning",
-    "label": "Sunny Morning",
-    "gradient": "linear-gradient(120deg, #f6d365 0%, #fda085 100%)",
-    "icon": "/assets/theme-pngs/005 Sunny Morning.png"
-  },
-  {
     "id": "dusty-grass",
     "label": "Dusty Grass",
     "gradient": "linear-gradient(120deg, #d4fc79 0%, #96e6a1 100%)",

@@ -375,7 +375,7 @@ textarea.editor-textarea {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 8px;
+  padding:8px;
   font-size: 15px;
   color: var(--txt-color);
   background: transparent;
@@ -430,7 +430,7 @@ textarea.editor-textarea {
 
 /* options */
 .select-options li {
-  padding: 8px 10px;
+  padding: 5px 10px;
   margin: 4px 0;
   border-radius: 6px;
   cursor: pointer;
@@ -481,8 +481,8 @@ textarea.editor-textarea {
 }
 
 .select-options .theme-icon {
-  height: 17px;
-  width: 18px;
+  height: 15px;
+  width: 17px;
   /* object-fit: cover; */
   margin-right: 8px;
   vertical-align: middle;
@@ -505,7 +505,7 @@ textarea.editor-textarea {
 
 .select-trigger .trigger-thumb {
   width: 28px;
-  height: 18px;
+  height: 16px;
   object-fit: cover;
   border-radius: 4px;
   margin-right: 8px;
