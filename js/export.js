@@ -1,4 +1,4 @@
-// export logic
+// export.js – fixed and improved
 const node = document.getElementById("panel-to-export");
 const copyBtn = document.getElementById("copy");
 const copyLinkBtn = document.getElementById("copy-link");
@@ -13,99 +13,170 @@ const toastIcon = document.getElementById("toastIcon");
 let toastTimer = null;
 function showToast({ text = "Copied", success = true, ms = 2200 } = {}) {
   if (!toast) return;
-  // update visuals
   toastMsg.textContent = text;
-  toastIcon.textContent = success ? "✓" : "!";
+  toastIcon.textContent = success ? "✓" : "✗";
+  toastIcon.style.color = success ? "#22c55e" : "#ef4444";
   toast.classList.add("show");
   toast.style.borderColor = success
     ? "rgba(34,197,94,0.18)"
-    : "rgba(255,68,68,0.16)";
-  // clear previous timeout
+    : "rgba(239,68,68,0.18)";
   if (toastTimer) clearTimeout(toastTimer);
   toastTimer = setTimeout(() => {
     toast.classList.remove("show");
   }, ms);
 }
 
+// Check if dom-to-image-more is loaded
+function ensureDomToImage() {
+  if (typeof domtoimage === "undefined") {
+    showToast({
+      text: "Export library not loaded yet",
+      success: false,
+      ms: 2500,
+    });
+    return false;
+  }
+  return true;
+}
+
 // download helper
-const downloadUrl = (url, filename) => {
+function downloadUrl(url, filename) {
   const a = document.createElement("a");
   a.href = url;
   a.download = filename;
   document.body.appendChild(a);
   a.click();
   a.remove();
-};
+}
 
-// save as PNG
+// Get template name for filename
+function getTemplateName(defaultName = "panel") {
+  const input = document.querySelector(".template-name");
+  const val = input?.value?.trim() || defaultName;
+  // Remove invalid filename characters
+  return val.replace(/[^a-zA-Z0-9\-_ ]/g, "");
+}
+
+//  SAVE AS PNG
 downloadAsPNG?.addEventListener("click", async (e) => {
   e.preventDefault();
+  if (!ensureDomToImage()) return;
   try {
     const dataUrl = await domtoimage.toPng(node, { cacheBust: true });
-    const rawName =
-      document.querySelector(".template-name")?.value?.trim() || "panel";
-    const name = rawName.toLowerCase().endsWith(".png")
-      ? rawName
-      : `${rawName}.png`;
+    const name = getTemplateName("snippet") + ".png";
     downloadUrl(dataUrl, name);
-    showToast({ text: "Exported Successfully !", ms: 2200, success: true });
+    showToast({ text: "Exported Successfully!", ms: 2200, success: true });
   } catch (err) {
-    alert("PNG export failed: " + err);
+    console.error("PNG export failed:", err);
+    showToast({ text: "PNG export failed", success: false, ms: 2500 });
   }
 });
 
-// save as SVG
+//  SAVE AS SVG
 downloadAsSVG?.addEventListener("click", async (e) => {
   e.preventDefault();
+  if (!ensureDomToImage()) return;
   try {
     let svgStr = await domtoimage.toSvg(node, { cacheBust: true });
 
-    if (!svgStr.startsWith("<?xml")) {
+    // Ensure SVG declaration only if missing
+    if (!svgStr.startsWith("<?xml") && !svgStr.startsWith("<svg")) {
       svgStr = '<?xml version="1.0" encoding="UTF-8"?>\n' + svgStr;
     }
 
-    //  blob
     const blob = new Blob([svgStr], { type: "image/svg+xml;charset=utf-8" });
     const url = URL.createObjectURL(blob);
-
-    const rawName =
-      document.querySelector(".template-name")?.value?.trim() || "panel";
-    const name = rawName.toLowerCase().endsWith(".svg")
-      ? rawName
-      : `${rawName}.svg`;
+    const name = getTemplateName("snippet") + ".svg";
     downloadUrl(url, name);
-
     setTimeout(() => URL.revokeObjectURL(url), 10000);
-    showToast({ text: "Exported Successfully !", ms: 2200, success: true });
+    showToast({ text: "SVG Exported!", ms: 2200, success: true });
   } catch (err) {
-    alert("SVG export failed: " + err);
+    console.error("SVG export failed:", err);
+    showToast({ text: "SVG export failed", success: false, ms: 2500 });
   }
 });
 
-// copy image to clipboard (PNG)
+//  COPY IMAGE TO CLIPBOARD (PNG)
 copyBtn?.addEventListener("click", async (e) => {
   e.preventDefault();
+  if (!ensureDomToImage()) return;
+
+  // Check if clipboard API is available
+  if (!navigator.clipboard || !navigator.clipboard.write) {
+    showToast({
+      text: "Clipboard write not supported (HTTPS required)",
+      success: false,
+      ms: 3000,
+    });
+    return;
+  }
+
   try {
     const blob = await domtoimage.toBlob(node, { cacheBust: true });
+    if (!blob) throw new Error("No blob generated");
 
-    await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
-    showToast({ text: "Image Copied !", ms: 2200, success: true });
+    await navigator.clipboard.write([
+      new ClipboardItem({
+        [blob.type]: blob,
+      }),
+    ]);
+    showToast({ text: "Image Copied!", ms: 2200, success: true });
   } catch (err) {
-    alert(
-      "Copy failed. Clipboard image write requires HTTPS and is not supported in all browsers. Error: " +
-        err,
-    );
+    console.error("Copy image failed:", err);
+    // Fallback: try copying as data URL
+    try {
+      const dataUrl = await domtoimage.toPng(node, { cacheBust: true });
+      await navigator.clipboard.writeText(dataUrl);
+      showToast({ text: "Copied as data URL", ms: 2500, success: true });
+    } catch (fallbackErr) {
+      showToast({
+        text: "Copy failed – try downloading instead",
+        success: false,
+        ms: 3000,
+      });
+    }
   }
 });
 
-// copy PNG data URL as text
+//  COPY DATA URL AS TEXT
 copyLinkBtn?.addEventListener("click", async (e) => {
   e.preventDefault();
+  if (!ensureDomToImage()) return;
+
+  if (!navigator.clipboard || !navigator.clipboard.writeText) {
+    showToast({
+      text: "Clipboard write not supported (HTTPS required)",
+      success: false,
+      ms: 3000,
+    });
+    return;
+  }
+
   try {
     const dataUrl = await domtoimage.toPng(node, { cacheBust: true });
     await navigator.clipboard.writeText(dataUrl);
-    showToast({ text: "Link Copied !", ms: 2200, success: true });
+    showToast({ text: "Data URL copied!", ms: 2200, success: true });
   } catch (err) {
-    alert("Copy link failed: " + err);
+    console.error("Copy link failed:", err);
+    showToast({ text: "Failed to copy data URL", success: false, ms: 2500 });
+  }
+});
+
+//  EXPORT BUTTON TOGGLE 
+const exportBtn = document.querySelector(".export-btn");
+const exportOptions = document.querySelector(".export-options");
+
+exportBtn?.addEventListener("click", (e) => {
+  e.stopPropagation();
+  exportOptions?.classList.toggle("export-options-active");
+});
+
+document.addEventListener("click", (e) => {
+  if (
+    exportOptions &&
+    !exportOptions.contains(e.target) &&
+    e.target !== exportBtn
+  ) {
+    exportOptions.classList.remove("export-options-active");
   }
 });
