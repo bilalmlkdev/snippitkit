@@ -114,7 +114,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (/\bselect\s+.+from\b|insert\s+into\b|create\s+table\b/.test(t))
       return "language-sql";
     if (
-      /^#\s+\w+|\[(.*?)\]\((.*?)\)|^---\s*$/.test(
+      /^#\s+\w+|\[(.*?)\]\((.*?)\)|^\s*$/.test(
         text.split("\n", 6).join("\n"),
       )
     )
@@ -130,7 +130,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const backgroundToggle = document.getElementById("background-toggle");
 
   const panelScreen = document.querySelector(".panel-screen");
-  const codePanel = document.querySelector(".code-panel"); // kept for compatibility
+  const codePanel = document.querySelector(".code-panel");
   const fontSizeInput = document.getElementById("the-font-size");
   const paddingInput = document.getElementById("padding");
   const borderRadiusInput = document.getElementById("borderRadius");
@@ -156,9 +156,6 @@ document.addEventListener("DOMContentLoaded", () => {
     pre.appendChild(codeBlock);
   }
 
-  // preserve whatever language class already lives on the <code> element in the HTML
-  // (e.g. "language-kotlin") so the dropdown and the highlighted output agree on load,
-  // instead of letting detectLanguageFromText() silently override it.
   if (codeBlock.className.includes("language-")) {
     currentLanguage = codeBlock.className.trim();
   }
@@ -210,19 +207,16 @@ document.addEventListener("DOMContentLoaded", () => {
       cs.getPropertyValue("-moz-tab-size") ||
       cs.getPropertyValue("tab-size") ||
       "4";
-    const caretColor = "#fff";
 
-    // editor.style.fontSize = cs.fontSize;
     editor.style.lineHeight = cs.lineHeight;
     editor.style.letterSpacing = cs.letterSpacing;
     editor.style.padding = cs.padding;
     editor.style.border = cs.border;
-
     editor.style.whiteSpace = "pre-wrap";
     editor.style.wordBreak = "break-word";
     editor.style.tabSize = tabSize;
     editor.style.MozTabSize = tabSize;
-    editor.style.caretColor = caretColor;
+    editor.style.caretColor = "#fff";
     editor.style.overflow = "hidden";
   }
   const debouncedCopyComputedStyles = debounce(
@@ -230,7 +224,27 @@ document.addEventListener("DOMContentLoaded", () => {
     DEBOUNCE_DELAY,
   );
 
-  // first I use just plain html to insert data like for (languages , fonts & thems)  but later I take help from chatgpt and then came up with json option to make my project to add more data just using JSON & keep clean..
+  //  LAZY IMAGE LOADING
+  function createImageWithLazy(src, alt, className = "") {
+    const img = document.createElement("img");
+    img.src = src;
+    img.alt = alt || "";
+    img.className = className;
+    img.loading = "lazy";
+    img.decoding = "async";
+    // Small placeholder while loading
+    img.style.backgroundColor = "rgba(255,255,255,0.05)";
+    return img;
+  }
+
+  function preloadImage(src) {
+    if (!src) return;
+    const link = document.createElement("link");
+    link.rel = "preload";
+    link.as = "image";
+    link.href = src;
+    document.head.appendChild(link);
+  }
 
   //  JSON data (themes, languages, fonts)
   async function loadData() {
@@ -271,18 +285,24 @@ document.addEventListener("DOMContentLoaded", () => {
         .map((t) => {
           const gradient = t.gradient || t.value || t.css || "";
           const icon = t.icon || t.img || "";
+          // Use a placeholder div instead of img,  then apply lazy load on dropdown open
+          const iconHtml = icon
+            ? `<img
+                  src="${icon}"
+                  class="theme-icon"
+                  alt="${t.label}"
+                  loading="lazy"
+                  decoding="async"
+                  onerror="this.style.display='none'"
+                > `
+            : "";
           return `<li role="option" data-value="${gradient}" aria-selected="false">
-          <span class="option-label">
-
-          ${icon ? `<img src="${icon}" class="theme-icon" alt="${t.label} loading="lazy"> ` : ""}${
-            t.label
-          }
-  </span>
-  <span class="option-tick" aria-hidden="true">
-    <svg viewBox="0 0 24 24" width="16" height="16">
-      <path d="M20 6L9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2"/>
-    </svg>
-  </span>
+            <span class="option-label">${iconHtml}${t.label}</span>
+            <span class="option-tick" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="16" height="16">
+                <path d="M20 6L9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </span>
           </li>`;
         })
         .join("");
@@ -293,15 +313,23 @@ document.addEventListener("DOMContentLoaded", () => {
         .map((l) => {
           const val = (l.prismClass || l.value || l.id || "").toString();
           const icon = l.icon || l.img || "";
+          const iconHtml = icon
+            ? `<img
+                  src="${icon}"
+                  class="theme-icon"
+                  alt="${l.label}"
+                  loading="lazy"
+                  decoding="async"
+                  onerror="this.style.display='none'"
+                > `
+            : "";
           return `<li role="option" data-value="${val}" aria-selected="false">
-         <span class="option-label">
-          ${icon ? `<img src="${icon}" class="theme-icon" alt="${l.label}">` : ""}${l.label}
-         </span>
-          <span class="option-tick" aria-hidden="true">
-    <svg viewBox="0 0 24 24" width="16" height="16">
-      <path d="M20 6L9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2"/>
-    </svg>
-  </span>
+            <span class="option-label">${iconHtml}${l.label}</span>
+            <span class="option-tick" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="16" height="16">
+                <path d="M20 6L9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </span>
           </li>`;
         })
         .join("");
@@ -314,13 +342,19 @@ document.addEventListener("DOMContentLoaded", () => {
           return `<li role="option" data-value="${val}" aria-selected="false">
             <span class="option-label">${f.name || f.id}</span>
             <span class="option-tick" aria-hidden="true">
-    <svg viewBox="0 0 24 24" width="16" height="16">
-      <path d="M20 6L9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2"/>
-    </svg>
-  </span>
+              <svg viewBox="0 0 24 24" width="16" height="16">
+                <path d="M20 6L9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </span>
           </li>`;
         })
         .join("");
+    }
+
+    // Preload the first theme icon for faster initial load
+    const firstTheme = themes[0];
+    if (firstTheme && firstTheme.icon) {
+      preloadImage(firstTheme.icon);
     }
 
     Array.from(document.querySelectorAll(".custom-select")).forEach(
@@ -461,7 +495,7 @@ document.addEventListener("DOMContentLoaded", () => {
       .catch(() => console.warn("Copy failed"));
   });
 
-  // --- UI control handlers (padding, radius, font size, toggles)
+  //  UI control handlers (padding, radius, font size, toggles)
   paddingInput?.addEventListener("input", () => {
     if (panelScreen) {
       panelScreen.style.padding = `${paddingInput.value}px`;
@@ -501,7 +535,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.addEventListener("resize", debouncedCopyComputedStyles);
 
-  // making here Custom select to look Ok.
+  //  CUSTOM SELECT 
   function hasClippingAncestor(el) {
     let curr = el.parentElement;
     while (curr && curr !== document.body) {
@@ -626,10 +660,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const selectedText = labelEl
         ? labelEl.textContent.trim()
         : selected.textContent.trim();
-      // const selectedText = selected.textContent.trim();
       const img = selected.querySelector("img");
       if (img) {
-        const thumbHTML = `<img class="trigger-thumb" src="${img.src}" alt="${selectedText}">`;
+        const thumbHTML = `<img class="trigger-thumb" src="${img.src}" alt="${selectedText}" loading="lazy" decoding="async">`;
         valueDisplay.innerHTML = `${thumbHTML} ${selectedText}`;
       } else valueDisplay.textContent = selectedText;
       handleSelectChange(name, selectedValue, selectedText);
@@ -759,7 +792,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll('input[type="range"].custom-range'),
   ).forEach(initCustomRange);
 
-  // code snippets for initial load of code templete >> note: I get all of these from chatgpt & I never check them ...... <?>
+  // code snippets for initial load
   const initialSnippets = [
     `import java.util.stream.IntStream;\n\nclass StreamExample {\n \tpublic static void main(String[] args) {\n \t \tIntStream.rangeClosed(1, 5).forEach(System.out::println);\n \t}\n}`,
     `public class HelloWorld {\n \tpublic static void main(String[] args) {\n \t \tSystem.out.println("Hello, World!");\n \t}\n}`,
@@ -790,8 +823,33 @@ document.addEventListener("DOMContentLoaded", () => {
         window.currentOpenRoot._closeSelect();
     }
   });
-});
 
-// this is all logics I write but I want to add more things. And writing these logics I spent almost 12 hours >>>
-// Hope you like my efforts and if you want to add more things please I am very greatfull...
-//For exporting logic I made a separate file to make it clear and later I update it if I ever learn <backend>
+  //  Intersection Observer for lazy loading images in dropdowns
+  // Observe all images in dropdowns and load them when they enter viewport
+  if ("IntersectionObserver" in window) {
+    const imageObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const img = entry.target;
+            const src = img.dataset.src || img.src;
+            if (img.dataset.src) {
+              img.src = src;
+              img.removeAttribute("data-src");
+            }
+            img.loading = "lazy";
+            img.decoding = "async";
+            imageObserver.unobserve(img);
+          }
+        });
+      },
+      { rootMargin: "100px" },
+    );
+
+    // Observe all images inside select-options
+    document.querySelectorAll(".select-options img").forEach((img) => {
+      // If image has a src, observe it
+      imageObserver.observe(img);
+    });
+  }
+});
