@@ -1,5 +1,8 @@
 {
-  "name": "snippetkit",
+  "name": "snippitkit",
   "version": "0.1.0",
-  "private": true
+  "private": true,
+  "description": "A lightweight, browser-based code snippet studio for turning plain code into polished, shareable screenshots.",
+  "author": "Bilal Malik (bilalmlkdev)",
+  "license": "MIT"
 }
