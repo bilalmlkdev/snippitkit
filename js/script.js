@@ -472,10 +472,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // adding the export options to functional...
-  exportBtn?.addEventListener("click", (e) => {
-    e.stopPropagation();
-    exportOptions?.classList.toggle("export-options-active");
-  });
 
   document.addEventListener("click", (e) => {
     if (
@@ -535,7 +531,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.addEventListener("resize", debouncedCopyComputedStyles);
 
-  //  CUSTOM SELECT 
+  //  CUSTOM SELECT
   function hasClippingAncestor(el) {
     let curr = el.parentElement;
     while (curr && curr !== document.body) {
